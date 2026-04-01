@@ -1,0 +1,12 @@
+[Unit] 
+Description=RPi Zero 2W USB MIDI 2.0 UMP Gadget 
+After=local-fs.target systemd-modules-load.service
+Wants=systemd-modules-load.service
+
+[Service] 
+Type=oneshot 
+RemainAfterExit=yes 
+ExecStart=/bin/bash /usr/local/bin/start-midi2-gadget.sh
+
+[Install] 
+WantedBy=multi-user.target 

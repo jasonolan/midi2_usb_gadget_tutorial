@@ -1,0 +1,16 @@
+[Unit]
+Description=MIDI 2.0 Gadget to FluidSynth Bridge
+# Wait for the hardware and the USB gadget logic to finish
+#After=midi2-gadget.service
+#Requires=midi2-gadget.service
+
+[Service]
+Type=forking
+# Ensure the environment is ready for ALSA
+ExecStartPre=/bin/sleep 2
+ExecStart=/home/pi/dev/midibridge_scripts/start_midi_bridge.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

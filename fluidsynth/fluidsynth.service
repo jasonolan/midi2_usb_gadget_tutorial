@@ -1,0 +1,35 @@
+[Unit]
+Description=FluidSynth Daemon
+Documentation=man:fluidsynth(1)
+After=sound.target pipewire.service pulseaudio.service wm8960-soundcard.service
+Wants=pipewire.service pulseaudio.service
+Requires=wm8960-soundcard.service
+ConditionPathExists=!/run/lock/fluidsynth.lock
+
+[Service]
+# Identity
+User=pi
+Group=pi
+
+LimitRTPRIO=95
+LimitRTTIME=infinity
+
+# Hardening
+
+ProtectSystem=full
+ProtectHome=false
+ProtectHostname=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+
+Type=simple  
+
+ExecStartPre=/usr/bin/touch /run/lock/fluidsynth.lock
+ExecStart=/home/pi/dev/fluidsynth_scripts/start-fluidsynth.sh
+ExecStopPost=/usr/bin/rm -f /run/lock/fluidsynth.lock
+
+[Install]
+# Standard for system-level services
+WantedBy=multi-user.target
