@@ -1,7 +1,7 @@
 
 This is part 1 in a 2 part tutorial series covering Midi 2.0 Gadget Mode and being able to send Midi 2 messages to trigger notes being received within Fluidsynth.
 
-Part 1 will cover everything around Midi 2.0 USB Gadget Kernel within Linux, building the kernel and setting up gadget mode for Midi 2.0. It also engages ALSA libraries and utilities.
+Part 1 will cover everything around Midi 2.0 USB Gadget Kernel within Linux, building the kernel and setting up gadget mode for Midi 2.0. It also installs updated ALSA libraries and utilities.
 
 Part 2 looks into setting up the audio HAT and drivers, installing Fluidsynth and running it as a service on boot. It also provides the Midibridge script to Midi connect the gadget driver to Fluidsynth. 
 # Part 1 - All things kernel
@@ -18,7 +18,7 @@ Our goal is to be able to send Midi 2.0 messages to the Pi Zero 2W that plays mu
 
 At the end of part 2 there is a list of Linux and ALSA commands to make navigating Midi 2.0 on Linux a little easier. 
 
-![[Pasted image 20260121091350.png]]
+![overview image](overview.png)
 ## What you need
 The aim is to use commonly available hardware and open source software to build a Midi 2.0 USB Gadget. 
 ### Hardware
@@ -26,7 +26,7 @@ You will need the following:
 - Raspberry PI  Zero 2W
 - A PI Zero audio hat. In this tutorial we use the [Waveshare WM8960 Audio HAT](https://www.waveshare.com/wiki/WM8960_Audio_HAT)
 
-![[2E3A2982-8E50-4F42-A27E-FC265949EF3D_1_105_c.jpeg]]
+![physical layout](physical_layout.jpeg)
 What is nice about the WM8960 is that it includes a small set of speakers with the hat. Nice for a standalone testing unit. 
 
 (The epaper display is intended to be used for displaying incoming Midi 2.0 messages but not implemented here )
@@ -39,7 +39,7 @@ What is nice about the WM8960 is that it includes a small set of speakers with t
 ## Step 1 - Download, install the PI OS, update and upgrade
 
 Using [Raspberry PI Imager](https://www.raspberrypi.com/software/) install:
-- Raspberry PI OS Lite (32 bit) under Raspberry PI OS (Other) menu
+- Raspberry PI OS Lite (32 bit) under Raspberry PI OS (Other) menu.
 Make sure to enable SSH service as we will use this later once we switch to gadget mode.
 
 Why the lite version and 32 bit? 
@@ -69,15 +69,18 @@ grep -E 'CONFIG_SND_(UMP|SEQ_UMP|USB_AUDIO_MIDI_V2)' /boot/config-$(uname -r)
 
 returns
 *CONFIG_SND_SEQ_UMP is not set*
+
 *CONFIG_SND_USB_AUDIO_MIDI_V2 is not set*
 
 Not so promising anymore. 
+
 The `f_midi2` driver provides the USB Midi 2.0 Gadget functionality.
 
 ```
 sudo modprobe f_midi2
 ```
 returns
+
 *modprobe: FATAL: Module f_midi2 not found in directory /lib/modules/6.12.62+rpt-rpi-v7*
 
 ```
@@ -181,9 +184,12 @@ Verify with: (replace kernel version as needed)
 find /lib/modules/6.12.66-v7+ -name *f_midi2.ko*
 find /lib/modules/6.12.66-v7+ -name *ump*.ko*
 ```
-If all went well, it should show the files.
+If all went well, it should show the files:
+
 */lib/modules/6.12.66-v7+/kernel/drivers/usb/gadget/function/usb_f_midi2.ko.xz*
+
 */lib/modules/6.12.66-v7+/kernel/sound/core/seq/snd-seq-ump-client.ko.xz*
+
 */lib/modules/6.12.66-v7+/kernel/sound/core/snd-ump.ko.xz*
 
 Backup before installing the newly built modules:
@@ -233,12 +239,13 @@ Verify with:
 lsmod | grep midi
 ```
 returns
-*usb_f_**midi**2            40960  2*
-*snd_ump                24576  1 usb_f_**midi**2*
-*snd_raw**midi**            36864  2 snd_seq_ump_client,snd_ump*
-*snd_seq_device         12288  4 snd_seq_ump_client,snd_seq,snd_raw**midi**,snd_ump*
-*libcomposite           65536  10 usb_f_**midi**2*
-*snd                    94208  11 snd_compress,usb_f_**midi**2,snd_seq,snd_soc_hdmi_codec,snd_timer,snd_raw**midi**,snd_seq_device,snd_bcm2835,snd_soc_core,snd_ump,snd_pcm*
+
+*usb_f_**midi**2            40960  2*  
+*snd_ump                24576  1 usb_f_**midi**2*  
+*snd_raw**midi**            36864  2 snd_seq_ump_client,snd_ump*  
+*snd_seq_device         12288  4 snd_seq_ump_client,snd_seq,snd_raw**midi**,snd_ump*  
+*libcomposite           65536  10 usb_f_**midi**2*  
+*snd                    94208  11  snd_compress,usb_f_**midi**2,snd_seq,snd_soc_hdmi_codec,snd_timer,snd_raw**midi**,snd_seq_device,snd_bcm2835,snd_soc_core,snd_ump,snd_pcm*  
 
 and 
 ```
@@ -246,16 +253,15 @@ modinfo usb_f_midi2
 ```
 returns
 
-*filename:       /lib/modules/6.12.66-v7+/kernel/drivers/usb/gadget/function/usb_f_midi2.ko.xz*
-*license:        GPL*
-*description:    USB MIDI 2.0 class function driver*
-*alias:          usbfunc:midi2*
-*srcversion:     94C030B8C48311102E8920B*
-*depends:        snd,libcomposite,snd-ump*
-*intree:         Y*
-*name:           usb_f_midi2*
-*vermagic:       6.12.66-v7+ SMP mod_unload modversions ARMv7 p2v8*
-
+*filename:       /lib/modules/6.12.66-v7+/kernel/drivers/usb/gadget/function/usb_f_midi2.ko.xz*  
+*license:        GPL*  
+*description:    USB MIDI 2.0 class function driver*  
+*alias:          usbfunc:midi2*  
+*srcversion:     94C030B8C48311102E8920B*  
+*depends:        snd,libcomposite,snd-ump*  
+*intree:         Y*  
+*name:           usb_f_midi2*  
+*vermagic:       6.12.66-v7+ SMP mod_unload modversions ARMv7 p2v8*  
 
 Confirm configfs is mounted
 ```
@@ -269,8 +275,9 @@ sudo mount -t configfs none /sys/kernel/config
 We have officially cleared the hardest part!! The kernel dragon is slain!!
 
 ## Step3 - Setup and test USB Gadget Mode
-Enabled USB Gadget Mode for Midi 2.0
-edit `/boot/firmware/config.txt` to include
+Enabled USB Gadget Mode for Midi 2.0.
+
+Edit `/boot/firmware/config.txt` to include
 ```
 dtoverlay=dwc2,dr_mode=peripheral
 ```
@@ -391,15 +398,16 @@ cat /proc/asound/cards  # Lists "MIDI 2.0 Gadget" as a card
 ```
 aconnect -l              # Shows UMP rawmidi ports
 ```
-returns
-client 0: 'System' [type=kernel]
-    0 'Timer           '
-    1 'Announce        '
-client 14: 'Midi Through' [type=kernel]
-    0 'Midi Through Port-0'
-client 20: 'MIDI 2.0 Gadget' [type=kernel,UMP-MIDI2,card=1]
-    0 'MIDI 2.0        '
-    1 'Group 1 (MIDI 2.0 Gadget I/O)'
+returns  
+client 0: 'System' [type=kernel]  
+    0 'Timer           '  
+    1 'Announce        '  
+client 14: 'Midi Through' [type=kernel]  
+    0 'Midi Through Port-0'  
+client 20: 'MIDI 2.0 Gadget' [type=kernel,UMP-MIDI2,card=1]  
+    0 'MIDI 2.0        '  
+    1 'Group 1 (MIDI 2.0 Gadget I/O)'  
+	
 ## Step 4 - Install ALSA libraries and utilities
 	
 Install alsa libraries and utilities (alsa-lib ≥1.2.10 and alsa-utils ≥1.2.10)
